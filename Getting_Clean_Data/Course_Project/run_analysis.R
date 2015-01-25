@@ -1,13 +1,27 @@
+# Script run_analysis.R
+# Author: Steven Sajous
+# This script merges the training and the test sets  for the
+# Human Activity Recognition Using Smartphones Dataset to create one data set.
+# It then extracts only the measurements on the mean and standard deviation for each measurement. 
+# It renames the activites with more descriptive labels in the data set
+# It then renames the columns with more human readable names 
+# As a last step it outputs a tidy data set with the average of each variable for each activity and each subject.
+# This is all done using the ools provided in teh "tidyr" library
+
 library(tidyr)
 
-##because of a bug in fread, had to use read.table and as.data.table for the bigger files
+# For effenciency most of the data is read in using fread()
+# but because of a bug in fread, had to use read.table and as.data.table for the bigger files
+# First we merge all the rows of the similar data. Then we add the columns together
 test_data_raw <- read.table("X_test.txt")
 test_data_raw <- as.data.table(test_data_raw)
 
 training_data_raw <- read.table("X_train.txt")
 training_data_raw <- as.data.table(training_data_raw)
 
-##combine and delete the variables we will not use
+
+# Merge this data and delete the variables we will not use
+# NOTE: All merges are done with test data first then training data second!!!
 complete_raw_data <- rbind(test_data_raw,training_data_raw)
 
 rm(test_data_raw)
@@ -19,25 +33,33 @@ test_subjects_raw  <- fread("subject_test.txt")
 training_activities_raw <- fread("y_train.txt")
 training_subjects_raw  <- fread("subject_train.txt")
 
-## Now we combine the activities together
+# Merge all activities
+# Then merge all subjects
 all_activities <- rbind(test_activities_raw,training_activities_raw)
 all_subjects <- rbind(test_subjects_raw,training_subjects_raw)
 
+# Remove all variables we will no longer use
 rm(test_activities_raw)
 rm(test_subjects_raw)
 rm(training_activities_raw)
 rm(training_subjects_raw)
 
 
-##Let's bind all the data together. Putting subjects and activities as the first columns
+# Let's bind all the data together. Putting subjects and activities as the first columns
+# do.call() allows to us to do it all at once
+# We end up with:
+# Subject Activity DATA_COLUMNS
 complete_raw_data <- do.call(cbind,list(all_subjects,all_activities,complete_raw_data))
 
-### Get the features data and turn it into an array of headers. With Subject and Activity
-## as the first columns
+# Get the features data and turn it into an array of headers. 
+# Following the way the data is stored in our set we prepend
+# "Subject" "Activity" to the column headers
+
 features <- fread("features.txt")
 headers <- features[,V2]
 headers <- c("Subject","Activity",headers)
 
+# Set the column names and delete the headers variable
 setnames(complete_raw_data,headers)
 rm(headers)
 
@@ -46,6 +68,7 @@ rm(headers)
 final_data <- complete_raw_data %>%
   select(Subject,Activity,contains("mean()"),contains("std()"))
 
+# Again we no longer need the huge data set. We have what we need in final_data
 rm(complete_raw_data)
 
 ## variable to hold the pretty values for Activity Types
@@ -86,13 +109,15 @@ headers <- cnames %>%
 
 #Rename the columns with our pretty names
 setnames(final_data,headers)  
- 
-#Using the group_by and summarise_each function of tidyr, we apply mean to all the numeric columns
+
+# Group the data by Subject and Activity using the group_by
+# Use summarise_each function of tidyr, we apply mean to all the numeric columns all at once
 averages <-
   final_data %>%
   group_by(Subject,Activity) %>%
   summarise_each(funs(mean)) %>%
   arrange(Subject,Activity)
 
+# Uncomment the following line if writing the averages data to a file
 write.table(averages,"averages.txt",row.name=FALSE)
 
