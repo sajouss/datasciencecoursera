@@ -122,6 +122,8 @@ averages <-
   summarise_each(funs(mean)) %>%
   arrange(Subject,Activity)
 
+print(final_data)
+
 # Uncomment the following line if writing the averages data to a file
 # write.table(averages,"averages.txt",row.name=FALSE)
 
