@@ -107,7 +107,7 @@ headers <- cnames %>%
   gsub(pattern="^t(\\w*)-std\\(\\)",replacement="std\\1Time\\2", perl=TRUE) %>%
   gsub(pattern="^f(\\w*)-std\\(\\)",replacement="std\\1Frequency\\2", perl=TRUE) 
 
-#Rename the columns with our pretty names
+#Rename the columns with our pretty names...
 setnames(final_data,headers)  
 
 # Group the data by Subject and Activity using the group_by
@@ -119,5 +119,5 @@ averages <-
   arrange(Subject,Activity)
 
 # Uncomment the following line if writing the averages data to a file
-write.table(averages,"averages.txt",row.name=FALSE)
+# write.table(averages,"averages.txt",row.name=FALSE)
 
