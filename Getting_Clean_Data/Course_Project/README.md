@@ -1,12 +1,18 @@
 Creates a tidy data set from data of the Human Activity Recognition Using Smartphones Data Set
+
+###If you are using git just clone this directory and go to the **Run the Script** section###
+
+###If you simply download the script follow the steps below###
 * Save the run_analysis.R to a directory of your choice
 * Donwload the data from https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip 
-* Unzip it in the same directory as the script and rename the directory to data
+* Unzip it in the same directory as the script and rename the directory to data save it
+
+###Run the script###
 * Launch RStudio
 * Install the tidyr package by running library(tidyr) in the RStudio console
 * Using setwd(''), move to the directory of your script
 * Open the script
-* Edit the script and uncomment the last line if you would like to save the tidy data set into a file named averages.txt and save it
+* Edit the script and uncomment the last line if you would like to save the tidy data set into a file named averages.txt and
 * In R Studio run: source('run_analysis.R')
 * The variable final_data holds the data set with all the tidy data that was constructed
 
