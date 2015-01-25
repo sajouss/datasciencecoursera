@@ -1,7 +1,3 @@
-#raw_test_data %>%
-#  select(Activity,contains("mean()")) ##& contains("std")) %>%
-#print
-
 library(tidyr)
 
 ##because of a bug in fread, had to use read.table and as.data.table for the bigger files
@@ -33,16 +29,20 @@ rm(training_activities_raw)
 rm(training_subjects_raw)
 
 
+##Let's bind all the data together. Putting subjects and activities as the first columns
 complete_raw_data <- do.call(cbind,list(all_subjects,all_activities,complete_raw_data))
 
-### features
+### Get the features data and turn it into an array of headers. With Subject and Activity
+## as the first columns
 features <- fread("features.txt")
 headers <- features[,V2]
 headers <- c("Subject","Activity",headers)
 
 setnames(complete_raw_data,headers)
+rm(headers)
 
-## We have names, now let's get the values we are interested in
+## We have names, now let's get the values we are interested in.
+# We only keep columns with mean() and std() in their names
 final_data <- complete_raw_data %>%
   select(Subject,Activity,contains("mean()"),contains("std()"))
 
@@ -64,10 +64,35 @@ transformActivityLabels <-function(x) {
 #Transform the numeric values of the activities labels into their pretty values 
 final_data <- mutate(final_data,Activity=transformActivityLabels(Activity))
 
-result3 <-
+## Let's do some cleanup of the column names now
+cnames <- names(final_data)
+
+## Using Perl style regex we are converting the pattern:
+## tSOMENAME-mean()-X to avgSOMENAMETimeXAxis
+## fSOMENAME-mean()-X to avgSOMENAMEFreqencyXAxis
+## If there is no trailing -X we ommit the Axis part
+## We do the same for -std() and prepend std to the name so we end up with
+## stdSOMENAMEFrequencyXAxis for example.
+
+headers <- cnames %>%
+  gsub(pattern="^t(\\w*)-mean\\(\\)-(\\w*)",replacement="avg\\1Time\\2Axis", perl=TRUE) %>%
+  gsub(pattern="^f(\\w*)-mean\\(\\)-(\\w*)",replacement="avg\\1Frequency\\2Axis", perl=TRUE) %>%
+  gsub(pattern="^t(\\w*)-mean\\(\\)",replacement="avg\\1Time\\2", perl=TRUE) %>%
+  gsub(pattern="^f(\\w*)-mean\\(\\)",replacement="avg\\1Frequency\\2", perl=TRUE) %>%
+  gsub(pattern="^t(\\w*)-std\\(\\)-(\\w*)",replacement="std\\1Time\\2Axis", perl=TRUE) %>%
+  gsub(pattern="^f(\\w*)-std\\(\\)-(\\w*)",replacement="std\\1Frequency\\2Axis", perl=TRUE) %>%
+  gsub(pattern="^t(\\w*)-std\\(\\)",replacement="std\\1Time\\2", perl=TRUE) %>%
+  gsub(pattern="^f(\\w*)-std\\(\\)",replacement="std\\1Frequency\\2", perl=TRUE) 
+
+#Rename the columns with our pretty names
+setnames(final_data,headers)  
+ 
+#Using the group_by and summarise_each function of tidyr, we apply mean to all the numeric columns
+averages <-
   final_data %>%
   group_by(Subject,Activity) %>%
   summarise_each(funs(mean)) %>%
   arrange(Subject,Activity)
 
+write.table(averages,"averages.txt",row.name=FALSE)
 
