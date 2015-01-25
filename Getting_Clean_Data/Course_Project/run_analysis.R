@@ -9,14 +9,15 @@
 # This is all done using the ools provided in teh "tidyr" library
 
 library(tidyr)
+library(data.table)
 
 # For effenciency most of the data is read in using fread()
 # but because of a bug in fread, had to use read.table and as.data.table for the bigger files
 # First we merge all the rows of the similar data. Then we add the columns together
-test_data_raw <- read.table("X_test.txt")
+test_data_raw <- read.table("data/test/X_test.txt")
 test_data_raw <- as.data.table(test_data_raw)
 
-training_data_raw <- read.table("X_train.txt")
+training_data_raw <- read.table("data/train/X_train.txt")
 training_data_raw <- as.data.table(training_data_raw)
 
 
@@ -28,10 +29,10 @@ rm(test_data_raw)
 rm(training_data_raw)
 
 
-test_activities_raw <- fread("y_test.txt")
-test_subjects_raw  <- fread("subject_test.txt")
-training_activities_raw <- fread("y_train.txt")
-training_subjects_raw  <- fread("subject_train.txt")
+test_activities_raw <- fread("data/test/y_test.txt")
+test_subjects_raw  <- fread("data/test/subject_test.txt")
+training_activities_raw <- fread("data/train/y_train.txt")
+training_subjects_raw  <- fread("data/train/subject_train.txt")
 
 # Merge all activities
 # Then merge all subjects
@@ -55,7 +56,7 @@ complete_raw_data <- do.call(cbind,list(all_subjects,all_activities,complete_raw
 # Following the way the data is stored in our set we prepend
 # "Subject" "Activity" to the column headers
 
-features <- fread("features.txt")
+features <- fread("data/features.txt")
 headers <- features[,V2]
 headers <- c("Subject","Activity",headers)
 
@@ -73,10 +74,13 @@ rm(complete_raw_data)
 
 ## variable to hold the pretty values for Activity Types
 ## The orider matters since:
-## 1 -> "Walking"
-## 2 -> "Walking Upstairs"
-## etc.. based on the activity_labels.txt file
-pretty_activity_labels <- c("Walking","Walking Upstairs","Walking Downstairs","Sitting","Standing","Laying")
+# 1 WALKING
+# 2 WALKING_UPSTAIRS
+# 3 WALKING_DOWNSTAIRS
+# 4 SITTING
+# 5 STANDING
+# 6 LAYING
+pretty_activity_labels <- c("WALKING","WALKING_UPSTAIRS","WALKING_DOWNSTAIRS","SITTING","STANDING","LAYING")
 
 ##Given an activity number this function returns it's pretty value
 transformActivityLabels <-function(x) {
